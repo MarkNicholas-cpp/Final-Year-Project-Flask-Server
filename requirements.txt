@@ -9,3 +9,7 @@ MarkupSafe==2.1.5
 numpy==1.26.4
 packaging==24.0
 Werkzeug==3.0.1
+flask_cors
+flask_jwt_extended
+flask_mysqldb
+sklearn
