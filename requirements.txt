@@ -12,4 +12,4 @@ Werkzeug==3.0.1
 flask_cors
 flask_jwt_extended
 flask_mysqldb
-sklearn
+scikit-learn
