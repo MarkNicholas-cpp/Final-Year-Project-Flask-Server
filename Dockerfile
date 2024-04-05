@@ -1,5 +1,8 @@
 # Use an official Python runtime as a parent image
-FROM python:3.10-slim
+FROM python:3.8-slim
+
+# Install pkg-config
+RUN apt-get update && apt-get install -y pkg-config && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory in the container
 WORKDIR /app
