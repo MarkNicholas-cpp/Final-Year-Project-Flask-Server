@@ -4,13 +4,13 @@ FROM python:3.8-slim
 # Install pkg-config and other necessary build tools
 RUN apt-get update && apt-get install -y \
     pkg-config \
-    libmysqlclient-dev \
+    libmariadb-dev-compat \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables for mysqlclient
-ENV MYSQLCLIENT_CFLAGS="-I/usr/include/mysql"
-ENV MYSQLCLIENT_LDFLAGS="-L/usr/lib/x86_64-linux-gnu -lmysqlclient"
+ENV MYSQLCLIENT_CFLAGS="-I/usr/include/mariadb"
+ENV MYSQLCLIENT_LDFLAGS="-L/usr/lib/x86_64-linux-gnu -lmariadb"
 
 # Set the working directory in the container
 WORKDIR /app
