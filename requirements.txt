@@ -14,4 +14,3 @@ flask_cors
 flask_jwt_extended
 scikit-learn
 mysqlclient
-os
