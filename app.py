@@ -15,6 +15,7 @@ from routes.search_routes import search_routes
 app = Flask(__name__)
 # Enable CORS and Database Connection
 CORS(app)
+load_dotenv()
 DB_USER = os.getenv('DB_USER')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
 DB_DATABASE = os.getenv('DB_DATABASE')
