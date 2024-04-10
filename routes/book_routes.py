@@ -2,21 +2,10 @@ from flask import Blueprint, jsonify, request
 import math
 import pandas as pd
 import pickle
-
 from Model import BookRecommender
-from flask_mysqldb import MySQL 
-import config
+from app import get_connection
 
 book_routes = Blueprint("book_routes", __name__)
-
-mysql = MySQL()
-
-
-mysql.host = config.MYSQL_HOST
-mysql.user = config.MYSQL_USER
-mysql.password = config.MYSQL_PASSWORD
-mysql.db = config.MYSQL_DB
-
 
 books = pd.read_csv("./routes/Books.csv",low_memory=False)
 ratings_df = pd.read_csv("./routes/Ratings.csv")
@@ -32,56 +21,63 @@ def say_hello():
 
 @book_routes.route("/getSearchBooks")
 def get_search_books():
-    try:
-        search_query = request.args.get("query")
-        query_params = ()
-        query = "SELECT * FROM `booksdata`"
-        if search_query:
-            regex_pattern = f"^{search_query}"
-            query += " WHERE `COL 2` REGEXP %s OR `COL 3` REGEXP %s"
-            query_params = (regex_pattern, regex_pattern)
-        else:
-            query += " LIMIT 100"
-        cur = mysql.connection.cursor()
-        cur.execute(query, query_params)
-        data = cur.fetchall()
-        cur.close()
-        search_books = data
-        res = [
-            {
-                "ISBN": book[0],
-                "Book-Title": book[1],
-                "Book-Author": book[2],
-                "Year-Of-Publication": book[3],
-                "Publisher": book[4],
-                "Image-URL-S": book[5],
-                "Image-URL-M": book[6],
-                "Image-URL-L": book[7],
-                "Average-Rating": math.isnan(
-                    ratings_df[ratings_df["ISBN"] == book[0]]["Book-Rating"].mean()
-                )
-                and 2
-                or round(ratings_df[ratings_df["ISBN"] == book[0]]["Book-Rating"].mean(),2),
-            }
-            for book in search_books
-        ]
-        return jsonify(res)
-
-    except Exception as e:
-        print(e)
-        return str(e)
+    connection = get_connection()
+    if not connection:
+        return jsonify({"error": "Failed to connect to the database"}), 500
+    else:
+        try:
+            search_query = request.args.get("query")
+            query_params = ()
+            query = "SELECT * FROM `booksdata`"
+            if search_query:
+                regex_pattern = f"^{search_query}"
+                query += " WHERE `COL 2` REGEXP %s OR `COL 3` REGEXP %s"
+                query_params = (regex_pattern, regex_pattern)
+            else:
+                query += " LIMIT 100"
+            cur = connection.cursor()
+            cur.execute(query, query_params)
+            data = cur.fetchall()
+            cur.close()
+            search_books = data
+            res = [
+                {
+                    "ISBN": book[0],
+                    "Book-Title": book[1],
+                    "Book-Author": book[2],
+                    "Year-Of-Publication": book[3],
+                    "Publisher": book[4],
+                    "Image-URL-S": book[5],
+                    "Image-URL-M": book[6],
+                    "Image-URL-L": book[7],
+                    "Average-Rating": math.isnan(
+                        ratings_df[ratings_df["ISBN"] == book[0]]["Book-Rating"].mean()
+                    )
+                    and 2
+                    or round(ratings_df[ratings_df["ISBN"] == book[0]]["Book-Rating"].mean(),2),
+                }
+                for book in search_books
+            ]
+            return jsonify(res)
+        except Exception as e:
+            print(e)
+            return str(e)
 
 
 def get_books(limit, offset):
-    try:
-        cur = mysql.connection.cursor()
-        query = "SELECT * FROM booksdata LIMIT %s OFFSET %s"
-        cur.execute(query, (limit, offset))
-        books = cur.fetchall()
-        cur.close()
-        return books
-    except Exception as e:
-        return str(e)
+    connection = get_connection()
+    if not connection:
+        return jsonify({"error": "Failed to connect to the database"}), 500
+    else:
+        try:
+            cur = connection.cursor()
+            query = "SELECT * FROM booksdata LIMIT %s OFFSET %s"
+            cur.execute(query, (limit, offset))
+            books = cur.fetchall()
+            cur.close()
+            return books
+        except Exception as e:
+            return str(e)
 
 
 @book_routes.route("/books")
@@ -153,15 +149,21 @@ def get_popular_books():
 
 
 def get_book_data(book_name):
-    cur = mysql.connection.cursor()
-    cur.execute(
-        "SELECT * FROM `booksdata` WHERE `COL 2` = %s OR `COL 3` = %s",
-        (book_name, book_name),
-    )
-    book_data = cur.fetchall()
-    cur.close()
-    return book_data
-
+    connection = get_connection()
+    if not connection:
+        return jsonify({"error": "Failed to connect to the database"}), 500
+    else:
+        try:
+            cur = connection.cursor()
+            cur.execute(
+                "SELECT * FROM `booksdata` WHERE `COL 2` = %s OR `COL 3` = %s",
+                (book_name, book_name),
+            )
+            book_data = cur.fetchall()
+            cur.close()
+            return book_data
+        except Exception as e:
+            return jsonify({"error" : str(e)}),500
 
 @book_routes.route("/getBook/<book_name>", methods=["GET"])
 def get_book(book_name):

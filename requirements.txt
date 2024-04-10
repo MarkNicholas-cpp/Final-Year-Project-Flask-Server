@@ -12,6 +12,7 @@ packaging
 Werkzeug
 flask_cors
 flask_jwt_extended
-flask_mysqldb
 scikit-learn
 mysqlclient
+dotenv
+os
