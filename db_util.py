@@ -20,5 +20,5 @@ def get_connection():
         return connection
 
     except mysql.connector.Error as err:
-        print(err)
+        print("Err")
         return err
