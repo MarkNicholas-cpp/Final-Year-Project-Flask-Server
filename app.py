@@ -1,6 +1,4 @@
 from flask import Flask, jsonify, request
-from dotenv import load_dotenv
-import os
 from flask_cors import CORS
 from flask_jwt_extended import (
     JWTManager,
@@ -8,33 +6,13 @@ from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
 )
-import mysql.connector
+from db_util import get_connection
 from routes.book_routes import book_routes
 from routes.search_routes import search_routes
 
 app = Flask(__name__)
 # Enable CORS and Database Connection
 CORS(app)
-load_dotenv()
-DB_USER = os.getenv('DB_USER')
-DB_PASSWORD = os.getenv('DB_PASSWORD')
-DB_DATABASE = os.getenv('DB_DATABASE')
-DB_HOST = os.getenv('DB_HOST')
-DB_SSL_CA = os.getenv('DB_SSL_CA')
-def get_connection():
-    try:
-        connection = mysql.connector.connect(
-            user=DB_USER,
-            password=DB_PASSWORD,
-            database=DB_DATABASE,
-            host=DB_HOST,
-            ssl_ca=DB_SSL_CA
-        )
-        return connection
-
-    except mysql.connector.Error as err:
-        print(err)
-        return None
 app.config.from_pyfile("config.py")
 jwt = JWTManager(app)
 
@@ -91,7 +69,7 @@ def like_or_dislike(ISBN):
                         "DELETE FROM book_likes WHERE `userId` = %s AND `ISBN` = %s",
                         (user_id, ISBN),
                     )
-                    mysql.connection.commit()
+                    connection.commit()
                     return jsonify({"message": "Book disliked successfully"})
                 else:
                     # If the user hasn't liked the book yet, add the like
@@ -99,7 +77,7 @@ def like_or_dislike(ISBN):
                         "INSERT INTO book_likes (`userId`, `ISBN`, `like`) VALUES (%s, %s, %s)",
                         (user_id, ISBN, True),
                     )
-                    mysql.connection.commit()
+                    connection.commit()
                     return jsonify({"message": "Book liked successfully"})
             except Exception as e:
                 print(e)

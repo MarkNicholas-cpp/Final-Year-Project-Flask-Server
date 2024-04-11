@@ -3,7 +3,7 @@ import math
 import pandas as pd
 import pickle
 from Model import BookRecommender
-from app import get_connection
+from db_util import get_connection
 
 book_routes = Blueprint("book_routes", __name__)
 
@@ -83,7 +83,7 @@ def get_books(limit, offset):
 @book_routes.route("/books")
 def get_books_route():
     try:
-        page = int(request.args.get("page", 1))
+        page = int(request.args.get("page", 0))
         page_size = int(request.args.get("page_size", 10))
         books = get_books(page_size, page)
         response = [
