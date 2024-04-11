@@ -17,6 +17,14 @@ app.config.from_pyfile("config.py")
 jwt = JWTManager(app)
 
 
+@app.route("/Connect")
+def connect():
+    connection = get_connection()
+    if not connection:
+        return jsonify({"error": "Failed to connect to the database"}), 500
+    else:
+        return "Connected to the database"
+
 # login With JWT
 @app.route("/login", methods=["POST"])
 def login():
