@@ -15,3 +15,4 @@ flask_jwt_extended
 scikit-learn
 mysqlclient
 python-dotenv
+mysql-connector-python
